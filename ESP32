@@ -1,0 +1,42 @@
+#include <MAX2870.h>
+#include <BigNumber.h>
+#include <esp_task_wdt.h>
+
+MAX2870 mySynth; // Create an instance of the MAX2870 class
+
+void setup() {
+    Serial.begin(115200);
+    esp_task_wdt_config_t wdt_config = {
+        .timeout_ms = 10000, // Time in milliseconds
+        .trigger_panic = true
+    };
+    esp_task_wdt_init(&wdt_config); // Correct way to initialize WDT
+    esp_task_wdt_add(NULL);         // Add current thread to the watchdog
+
+    #ifdef ARDUINO_ARCH_ESP32
+    //customSPIBegin();               // Custom SPI initialization for ESP32
+    #endif
+
+    mySynth.init(4,17,1,18,0); // Initialize the MAX2870 with SPI settings, check pin
+
+    BigNumber::begin(20); // Initialize BigNumber library with specified precision
+
+    mySynth.SetStepFreq(2400e6); // Set frequency to 2.4 GHz, ensure this method exists
+}
+
+void loop() {
+    BigNumber a = "123456789012345678901234567890";
+    BigNumber b = "987654321098765432109876543210";
+    BigNumber result = a * b; // Perform calculation
+
+    Serial.print("Result: ");
+    Serial.println(result);
+
+    esp_task_wdt_reset(); // Reset the watchdog timer
+
+    delay(1000);
+}
+
+// void customSPIBegin() {
+//     SPI.begin(); // Customize with specific pins if necessary
+// }
